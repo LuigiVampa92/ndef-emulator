@@ -112,13 +112,13 @@ NdefEmulation(this).currentEmulatedNdefData = ContactNdefData("John", "Doe", "+1
 
 ## Demo
 
-The demo application can be found and downloaded in Releases.  
+The demo applications can be found and downloaded in Releases.  
 
-You can download the demo app [here](https://github.com/TODO).
+You can download the demo apps for the latest library version [here](https://github.com/LuigiVampa92/ndef-emulator/releases/tag/release-1.0.0).
 
-There are versions for [smartphones](https://github.com/TODO) and for [watches](https://github.com/TODO)
+There are versions for the [smartphones](https://github.com/LuigiVampa92/ndef-emulator/releases/download/release-1.0.0/ndef_emulation_demo_phone_release_1.0.0.apk) and for the [watches](https://github.com/LuigiVampa92/ndef-emulator/releases/download/release-1.0.0/ndef_emulation_demo_watch_release_1.0.0.apk)
 
-You can also build the demo application yourself from the sources:
+You can also build the demo applications yourself from the sources:
 ```
 ./gradlew clean assemblePhoneRelease
 ./gradlew clean assembleWatchRelease
