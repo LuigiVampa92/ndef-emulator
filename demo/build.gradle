@@ -1,0 +1,86 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
+}
+
+android {
+    namespace "${rootProject.ext.packageGroupId}.${rootProject.ext.packageNamespaceApplication}"
+    compileSdk rootProject.ext.versionSdkTarget
+    defaultConfig {
+        applicationId "${rootProject.ext.packageGroupId}.${rootProject.ext.packageNamespaceApplication}"
+        minSdk rootProject.ext.versionSdkMin
+        targetSdk rootProject.ext.versionSdkTarget
+        versionCode rootProject.ext.versionCodeApp
+        versionName rootProject.ext.versionNameApp
+    }
+    signingConfigs {
+        release
+        def signingProperties = new Properties()
+        def propertiesFile = new File('signing/signing.properties')
+        if (propertiesFile.canRead()) {
+            signingProperties.load(new FileInputStream(propertiesFile))
+            if (signingProperties != null && signingProperties.containsKey('app.keystore.file') && signingProperties.containsKey('app.keystore.password') && signingProperties.containsKey('app.key.alias') && signingProperties.containsKey('app.key.password')) {
+                android.signingConfigs.release.storeFile = file(signingProperties['app.keystore.file'])
+                android.signingConfigs.release.storePassword = signingProperties['app.keystore.password']
+                android.signingConfigs.release.keyAlias = signingProperties['app.key.alias']
+                android.signingConfigs.release.keyPassword = signingProperties['app.key.password']
+            }
+        } else {
+            android.buildTypes.release.signingConfig = null
+        }
+    }
+    buildTypes {
+        debug {
+            debuggable true
+            jniDebuggable true
+            minifyEnabled false
+            shrinkResources false
+        }
+        release {
+            debuggable false
+            jniDebuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility rootProject.ext.versionJava
+        targetCompatibility rootProject.ext.versionJava
+        encoding "UTF-8"
+    }
+    kotlinOptions {
+        jvmTarget = rootProject.ext.versionKotlin
+    }
+    productFlavors {
+        phone {
+            flavorDimensions "default"
+            applicationIdSuffix '.phone'
+        }
+        watch {
+            flavorDimensions "default"
+            applicationIdSuffix '.watch'
+        }
+    }
+    android.applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            output.outputFileName = "ndef_emulation_demo_${camelToSnakeCase(variant.flavorName)}_${variant.buildType.name}_${versionName}.apk"
+        }
+    }
+}
+
+dependencies {
+    implementation project(':ndefemulation')
+    implementation libs.androidx.core.ktx
+}
+
+static def String camelToSnakeCase(String value) {
+    def il = new ArrayList<Character>()
+    for (int i = 0; i < value.length(); ++i) {
+        def c = value.charAt(i)
+        if (c.isUpperCase()) { il.add('_') }
+        il.add(c.toLowerCase())
+    }
+    return il.join()
+}

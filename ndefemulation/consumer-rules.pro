@@ -1,0 +1,1 @@
+-keep class com.luigivampa92.ndefemulation.hce.NfcType4TagNdefEmulationService

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nfc_type4_tag_emulation_service_name">NDEF emulation service</string>
+    <string name="nfc_type4_tag_emulation_description">NDEF emulation</string>
+</resources>

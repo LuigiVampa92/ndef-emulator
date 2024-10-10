@@ -1,0 +1,21 @@
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.jetbrains.kotlin.android) apply false
+    alias(libs.plugins.android.library) apply false
+}
+
+ext {
+    versionJava = JavaVersion.VERSION_1_8
+    versionKotlin = "1.8"
+    versionSdkMin = 21
+    versionSdkTarget = 35
+    versionCodeApp = 1
+    versionNameApp = "1.0.0"
+    versionNameLibrary = "1.0.0"
+    packageGroupId = "com.luigivampa92"
+    packageNamespaceApplication = "ndefemulator"
+    packageNamespaceLibrary = "ndefemulation"
+    packageMavenArtifactIdLibrary = "ndefemulation-android"
+    packageMavenArtifactDescription = "Library that performs emulation of NFC forum type 4 tags using the android host card emulation API"
+    packageRepoUrl = "https://github.com/LuigiVampa92/ndef-emulator"
+}

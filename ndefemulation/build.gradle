@@ -1,0 +1,156 @@
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.jetbrains.kotlin.android)
+    id 'maven-publish'
+    id 'signing'
+}
+
+def logTag = "NDEF"
+def logLevel = "INFO"
+
+group = rootProject.ext.packageGroupId
+version = rootProject.ext.versionNameLibrary
+
+android {
+    namespace "${rootProject.ext.packageGroupId}.${rootProject.ext.packageNamespaceLibrary}"
+    compileSdk rootProject.ext.versionSdkTarget
+    defaultConfig {
+        minSdk rootProject.ext.versionSdkMin
+        targetSdk rootProject.ext.versionSdkTarget
+        aarMetadata {
+            minCompileSdk = rootProject.ext.versionSdkMin
+        }
+    }
+    buildFeatures {
+        buildConfig true
+    }
+    buildTypes {
+        debug {
+            buildConfigField "Boolean", "LOGS_ENABLED", "true"
+            buildConfigField "String", "LOG_TAG", "\"${logTag}\""
+            buildConfigField "int", "LOG_LEVEL", "android.util.Log.${logLevel}"
+        }
+        release {
+            consumerProguardFiles 'consumer-rules.pro'
+            buildConfigField "Boolean", "LOGS_ENABLED", "false"
+            buildConfigField "String", "LOG_TAG", "\"${logTag}\""
+            buildConfigField "int", "LOG_LEVEL", "android.util.Log.ERROR"
+        }
+    }
+    compileOptions {
+        sourceCompatibility rootProject.ext.versionJava
+        targetCompatibility rootProject.ext.versionJava
+        encoding "UTF-8"
+    }
+    kotlinOptions {
+        jvmTarget = rootProject.ext.versionKotlin
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}
+
+def pomXmlData = {
+    name rootProject.ext.packageMavenArtifactIdLibrary
+    description rootProject.ext.packageMavenArtifactDescription
+    url rootProject.ext.packageRepoUrl
+    licenses {
+        license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+        }
+    }
+    scm {
+        url rootProject.ext.packageRepoUrl
+    }
+    developers {
+        developer {
+            id "luigivampa92"
+            name "Pavel Vasilev"
+            email "luigivampa92@gmail.com"
+        }
+    }
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = rootProject.ext.packageGroupId
+            artifactId = rootProject.ext.packageMavenArtifactIdLibrary
+            version = rootProject.ext.versionNameLibrary
+            afterEvaluate {
+                from components.release
+            }
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', rootProject.ext.packageMavenArtifactDescription)
+                root.children().last() + pomXmlData
+            }
+        }
+    }
+    repositories {
+        def mavenPersonalUrl = ''
+        def mavenPersonalUser = ''
+        def mavenPersonalPassword = ''
+        def mavenOssrhUrl = ''
+        def mavenOssrhUser = ''
+        def mavenOssrhPassword = ''
+        def publishProperties = new Properties()
+        def propertiesFile = new File('publish.properties')
+        if (propertiesFile.canRead()) {
+            publishProperties.load(new FileInputStream(propertiesFile))
+            if (publishProperties != null && publishProperties.containsKey('maven.personal.url') && publishProperties.containsKey('maven.personal.user') && publishProperties.containsKey('maven.personal.password')) {
+                mavenPersonalUrl = publishProperties['maven.personal.url']
+                mavenPersonalUser = publishProperties['maven.personal.user']
+                mavenPersonalPassword = publishProperties['maven.personal.password']
+            }
+            if (publishProperties != null && publishProperties.containsKey('maven.ossrh.url') && publishProperties.containsKey('maven.ossrh.user') && publishProperties.containsKey('maven.ossrh.password')) {
+                mavenOssrhUrl = publishProperties['maven.ossrh.url']
+                mavenOssrhUser = publishProperties['maven.ossrh.user']
+                mavenOssrhPassword = publishProperties['maven.ossrh.password']
+            }
+        }
+        mavenLocal()
+        maven {
+            name 'mavenPersonal'
+            url = mavenPersonalUrl
+            credentials {
+                username = mavenPersonalUser
+                password = mavenPersonalPassword
+            }
+        }
+        maven {
+            name 'mavenOssrh'
+            url = mavenOssrhUrl
+            credentials {
+                username = mavenOssrhUser
+                password = mavenOssrhPassword
+            }
+        }
+    }
+}
+
+signing {
+    def gpgKeyFilePath = ''
+    def gpgKey = ''
+    def gpgKeyPassword = ''
+    def signingProperties = new Properties()
+    def propertiesFile = new File('signing/signing.properties')
+    if (propertiesFile.canRead()) {
+        signingProperties.load(new FileInputStream(propertiesFile))
+        if (signingProperties != null && signingProperties.containsKey('gpg.key.file') && signingProperties.containsKey('gpg.key.password')) {
+            gpgKeyFilePath = file(signingProperties['gpg.key.file']).absolutePath
+            gpgKeyPassword = signingProperties['gpg.key.password']
+        }
+    }
+    def gpgKeyFile = new File(gpgKeyFilePath)
+    if (gpgKeyFile.canRead()) {
+        gpgKey = file(gpgKeyFilePath).text
+    }
+    useInMemoryPgpKeys(gpgKey, gpgKeyPassword)
+    sign publishing.publications.release
+}
